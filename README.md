@@ -50,9 +50,11 @@ Finished
 If you wish, you can provide environment variables instead of needing input - this is useful for running on a server or service.
 The following environment variables are required to be set.
 
+```
 GECKOBOARD_APIKEY=key
 BULLHORN_USER=username
 BULLHORN_PASS=password
+```
 
 To use the environment variables you will need to need to pass the switch `--creds-from-env` after the push command.
 
