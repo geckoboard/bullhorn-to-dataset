@@ -2,15 +2,21 @@ package cmd
 
 import (
 	"bufio"
+	"bullhorn-to-dataset/bullhorn"
 	"bullhorn-to-dataset/config"
+	"bullhorn-to-dataset/geckoboard"
+	"bullhorn-to-dataset/processor"
+	"context"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
 func PushCommand() *cobra.Command {
-	var credsFromEnv bool
+	var credsFromEnv, singleRun bool
 	conf := &config.Config{}
 
 	cmd := &cobra.Command{
@@ -29,13 +35,39 @@ func PushCommand() *cobra.Command {
 				askQuestion(conf, &conf.GeckoboardAPIKey, "Geckoboard apikey")
 			}
 
-			//TODO: Run with config instance
+			for {
+				ctx := context.Background()
+				fmt.Printf("Authenticating with Bullhorn...")
+
+				bc := bullhorn.New(conf.BullhornHost)
+				if err := bc.AuthService.Login(ctx, conf.BullhornUsername, conf.BullhornPassword); err != nil {
+					fmt.Printf("Failed\n")
+					log.Fatal(err)
+				}
+
+				fmt.Printf("Success\nQuerying data from Bullhorn\n")
+
+				gc := geckoboard.New(conf.GeckoboardHost, conf.GeckoboardAPIKey)
+				job := processor.New(bc, gc)
+				if err := job.Process(ctx); err != nil {
+					log.Fatal(err)
+				}
+
+				if singleRun {
+					fmt.Println("Finished")
+					return
+				} else {
+					fmt.Printf("Sleeping for 15mins")
+					time.Sleep(15 * time.Minute)
+				}
+			}
 		},
 	}
 
 	cmd.Flags().BoolVar(&credsFromEnv, "creds-from-env", false, "Read credentials from envs instead of user input")
-	cmd.Flags().StringVar(&conf.GeckoboardHost, "geckoboard-host", "api.geckoboard.com", "Geckoboard host to push data to")
-	cmd.Flags().StringVar(&conf.BullhornHost, "bullhorn-host", "universal.bullhornstaffing.com", "Bullhorn universal API host")
+	cmd.Flags().BoolVar(&singleRun, "single-run", false, "Run querying data from Bullhorn just once and exit")
+	cmd.Flags().StringVar(&conf.GeckoboardHost, "geckoboard-host", "https://api.geckoboard.com", "Geckoboard host to push data to")
+	cmd.Flags().StringVar(&conf.BullhornHost, "bullhorn-host", "https://universal.bullhornstaffing.com", "Bullhorn universal API host")
 
 	return cmd
 }
