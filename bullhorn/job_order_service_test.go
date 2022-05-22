@@ -129,3 +129,36 @@ func TestEpochMilli_Time(t *testing.T) {
 		assert.DeepEqual(t, unix.Time(), time.Date(2022, 5, 22, 10, 34, 52, 0, time.UTC))
 	})
 }
+
+func TestOwner_FullName(t *testing.T) {
+	t.Run("returns nil", func(t *testing.T) {
+		assert.Assert(t, Owner{}.FullName() == nil)
+	})
+
+	t.Run("returns first name", func(t *testing.T) {
+		o := Owner{FirstName: "John"}
+		assert.Equal(t, *o.FullName(), "John")
+	})
+
+	t.Run("returns last name", func(t *testing.T) {
+		o := Owner{LastName: "Smith"}
+		assert.Equal(t, *o.FullName(), "Smith")
+	})
+
+	t.Run("returns full name", func(t *testing.T) {
+		o := Owner{FirstName: "John", LastName: "Smith"}
+		assert.Equal(t, *o.FullName(), "John Smith")
+	})
+}
+
+func TestCategories_Join(t *testing.T) {
+	t.Run("returns categories joined and sorted", func(t *testing.T) {
+		c := Categories{
+			Data: []EntityWithName{
+				{Name: "Cat A"},
+				{Name: "Architure"},
+			},
+		}
+		assert.Equal(t, c.Join(), "Architure ; Cat A")
+	})
+}

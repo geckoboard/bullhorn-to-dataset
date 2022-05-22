@@ -2,7 +2,9 @@ package bullhorn
 
 import (
 	"context"
+	"fmt"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -63,6 +65,28 @@ type EntityWithName struct {
 type Owner struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
+}
+
+func (o Owner) FullName() *string {
+	if o.FirstName == "" && o.LastName == "" {
+		return nil
+	}
+
+	val := strings.TrimSpace(fmt.Sprintf("%s %s", o.FirstName, o.LastName))
+	return &val
+}
+
+func (c Categories) Join() string {
+	cats := []string{}
+
+	for _, c := range c.Data {
+		cats = append(cats, c.Name)
+	}
+
+	// Sort so the categories are always consistent on the output
+	// regardless of the order they are added
+	sort.Strings(cats)
+	return strings.Join(cats, " ; ")
 }
 
 func (j *jobOrderService) Search(ctx context.Context, query SearchQuery) (*JobOrders, error) {
