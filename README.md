@@ -8,7 +8,7 @@ Push Bullhorn data into your Geckoboard dataset
 
 * macOS [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-darwin-amd64) / [arm64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-darwin-arm64)
 * Linux [x86](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-linux-386) / [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-linux-amd64)
-* Windows [x86](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-386.exe) / [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-windows-amd64.exe)
+* Windows [x86](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-windows-386.exe) / [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-windows-amd64.exe)
 
 #### Make it executable (macOS / Linux)
 
