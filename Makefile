@@ -2,7 +2,7 @@ BUILD_DIR=bin
 BUILD_NAME=bullhorn-to-dataset
 BUILD_PREFIX=${BUILD_DIR}/${BUILD_NAME}
 
-VERSION=0.0.1
+VERSION=0.0.2
 LDFLAGS="-X bullhorn-to-dataset/cmd.version=$(VERSION)"
 
 build:
