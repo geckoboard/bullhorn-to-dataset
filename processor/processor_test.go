@@ -20,69 +20,76 @@ func TestProcessor_New(t *testing.T) {
 	assert.Equal(t, p.geckoboardClient, gc)
 }
 
-var testJobOrders = []bullhorn.JobOrder{
-	{
-		ID:             4345,
-		Title:          "Automation engineer",
-		DateAdded:      1653214787000,
-		Status:         "Accepting Candidates",
-		EmploymentType: "Contract",
-		Owner: bullhorn.Owner{
-			FirstName: "Gustavo",
-			LastName:  "Fring",
-		},
-		Client: bullhorn.EntityWithName{
-			Name: "Los Pollos Hermanos",
-		},
-		Categories: bullhorn.Categories{
-			Data: []bullhorn.EntityWithName{
-				{Name: "Category B"},
-				{Name: "Category A"},
+var (
+	wantQueryFields = []string{
+		"id", "dateAdded", "dateClosed", "dateEnd", "status", "categories",
+		"employmentType", "title", "owner", "clientCorporation", "isOpen",
+	}
+
+	testJobOrders = []bullhorn.JobOrder{
+		{
+			ID:             4345,
+			Title:          "Automation engineer",
+			DateAdded:      1653214787000,
+			Status:         "Accepting Candidates",
+			EmploymentType: "Contract",
+			Owner: bullhorn.Owner{
+				FirstName: "Gustavo",
+				LastName:  "Fring",
+			},
+			Client: bullhorn.EntityWithName{
+				Name: "Los Pollos Hermanos",
+			},
+			Categories: bullhorn.Categories{
+				Data: []bullhorn.EntityWithName{
+					{Name: "Category B"},
+					{Name: "Category A"},
+				},
 			},
 		},
-	},
-	{
-		ID:             5555,
-		Title:          "CEO",
-		DateAdded:      1653204787000,
-		DateClosed:     1653214787000,
-		DateEnd:        1653214986000,
-		Status:         "Closed",
-		EmploymentType: "Permanent",
-		Owner: bullhorn.Owner{
-			FirstName: "Kim",
-			LastName:  "Wexler",
-		},
-		Client: bullhorn.EntityWithName{
-			Name: "Hamlin Hamlin McGill",
-		},
-	},
-	{
-		ID:             3333,
-		Title:          "Support role",
-		DateAdded:      1653204787000,
-		DateClosed:     1653214787000,
-		DateEnd:        1653214986000,
-		Status:         "Closed",
-		EmploymentType: "Contract",
-		Owner: bullhorn.Owner{
-			FirstName: "Saul",
-		},
-		Client: bullhorn.EntityWithName{
-			Name: "JMM",
-		},
-		Categories: bullhorn.Categories{
-			Data: []bullhorn.EntityWithName{
-				{Name: "Category C"},
+		{
+			ID:             5555,
+			Title:          "CEO",
+			DateAdded:      1653204787000,
+			DateClosed:     1653214787000,
+			DateEnd:        1653214986000,
+			Status:         "Closed",
+			EmploymentType: "Permanent",
+			Owner: bullhorn.Owner{
+				FirstName: "Kim",
+				LastName:  "Wexler",
+			},
+			Client: bullhorn.EntityWithName{
+				Name: "Hamlin Hamlin McGill",
 			},
 		},
-	},
-}
+		{
+			ID:             3333,
+			Title:          "Support role",
+			DateAdded:      1653204787000,
+			DateClosed:     1653214787000,
+			DateEnd:        1653214986000,
+			Status:         "Closed",
+			EmploymentType: "Contract",
+			Owner: bullhorn.Owner{
+				FirstName: "Saul",
+			},
+			Client: bullhorn.EntityWithName{
+				Name: "JMM",
+			},
+			Categories: bullhorn.Categories{
+				Data: []bullhorn.EntityWithName{
+					{Name: "Category C"},
+				},
+			},
+		},
+	}
+)
 
 func TestProcessor_Process(t *testing.T) {
 	t.Run("processes all records successfully", func(t *testing.T) {
 		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService(testJobOrders)
+		bc.JobOrderService = newJobOrderService(t, testJobOrders)
 
 		gc := geckoboard.New("", "")
 		dataSent := false
@@ -169,15 +176,24 @@ func TestProcessor_Process(t *testing.T) {
 
 		bc := bullhorn.New("")
 		bc.JobOrderService = mockJobOrderService{
-			searchFn: func(bullhorn.SearchQuery) (*bullhorn.JobOrders, error) {
+			searchFn: func(got bullhorn.SearchQuery) (*bullhorn.JobOrders, error) {
 				bullhornRequests += 1
+				want := bullhorn.SearchQuery{
+					Fields: wantQueryFields,
+					Where:  "isDeleted=false",
+					Count:  2,
+				}
 
 				switch bullhornRequests {
 				case 1:
+					assert.DeepEqual(t, got, want)
 					return &bullhorn.JobOrders{
 						Items: testJobOrders[:2],
 					}, nil
 				case 2:
+					want.Start = 2 // Offset based on the count
+					assert.DeepEqual(t, got, want)
+
 					return &bullhorn.JobOrders{
 						Items: testJobOrders[2:],
 					}, nil
@@ -252,7 +268,7 @@ func TestProcessor_Process(t *testing.T) {
 
 	t.Run("processes only max dataset records", func(t *testing.T) {
 		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService(testJobOrders)
+		bc.JobOrderService = newJobOrderService(t, testJobOrders)
 
 		gc := geckoboard.New("", "")
 		dataSent := false
@@ -306,7 +322,7 @@ func TestProcessor_Process(t *testing.T) {
 
 	t.Run("processes when no job order records", func(t *testing.T) {
 		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService([]bullhorn.JobOrder{})
+		bc.JobOrderService = newJobOrderService(t, []bullhorn.JobOrder{})
 
 		gc := geckoboard.New("", "")
 		gc.DatasetService = mockDatasetService{
@@ -336,7 +352,7 @@ func TestProcessor_Process(t *testing.T) {
 
 	t.Run("returns error when geckoboard find or create dataset fails", func(t *testing.T) {
 		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService([]bullhorn.JobOrder{{}})
+		bc.JobOrderService = newJobOrderService(t, []bullhorn.JobOrder{{}})
 
 		gc := geckoboard.New("", "")
 		gc.DatasetService = mockDatasetService{
@@ -351,7 +367,7 @@ func TestProcessor_Process(t *testing.T) {
 
 	t.Run("returns error when geckoboard find or create dataset fails", func(t *testing.T) {
 		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService([]bullhorn.JobOrder{{}})
+		bc.JobOrderService = newJobOrderService(t, []bullhorn.JobOrder{{}})
 
 		gc := geckoboard.New("", "")
 		gc.DatasetService = mockDatasetService{
@@ -387,9 +403,16 @@ type mockJobOrderService struct {
 	searchFn func(bullhorn.SearchQuery) (*bullhorn.JobOrders, error)
 }
 
-func newJobOrderService(recs []bullhorn.JobOrder) mockJobOrderService {
+func newJobOrderService(t *testing.T, recs []bullhorn.JobOrder) mockJobOrderService {
 	return mockJobOrderService{
-		searchFn: func(bullhorn.SearchQuery) (*bullhorn.JobOrders, error) {
+		searchFn: func(got bullhorn.SearchQuery) (*bullhorn.JobOrders, error) {
+			want := bullhorn.SearchQuery{
+				Fields: wantQueryFields,
+				Where:  "isDeleted=false",
+				Count:  200,
+			}
+
+			assert.DeepEqual(t, got, want)
 			return &bullhorn.JobOrders{
 				Items: recs,
 			}, nil

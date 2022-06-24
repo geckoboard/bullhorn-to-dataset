@@ -97,7 +97,7 @@ func (p Processor) queryJobOrders(ctx context.Context) ([]bullhorn.JobOrder, err
 			"categories", "employmentType", "title", "owner",
 			"clientCorporation", "isOpen",
 		},
-		Where: "id>0",
+		Where: "isDeleted=false",
 		Start: 0,
 		Count: p.bullhornRecordCount,
 	}
