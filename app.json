@@ -5,16 +5,13 @@
   "repository": "https://github.com/geckoboard/bullhorn-to-dataset",
   "env": {
     "GECKOBOARD_APIKEY": {
-      "description": "Your Geckoboard API key",
-      "generator": "secret"
+      "description": "Your Geckoboard API key"
     },
     "BULLHORN_USER": {
-      "description": "Your Bullhorn login username",
-      "generator": "secret"
+      "description": "Your Bullhorn login username"
     },
     "BULLHORN_PASS": {
-      "description": "Your Bullhorn login password",
-      "generator": "secret"
+      "description": "Your Bullhorn login password"
     },
     "GOVERSION": "go1.18"
   },
