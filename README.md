@@ -76,3 +76,7 @@ If you plan to use your own scheduler like cron or something, then you may pass 
 ### Dataset
 
 This creates a single dataset in your account called **bullhorn-joborders**
+
+### Deploy with heroku
+
+[![Deploy with Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/geckoboard/bullhorn-to-dataset/tree/chore-heroku-auto-build)

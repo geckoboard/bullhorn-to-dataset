@@ -1,0 +1,43 @@
+{
+  "name": "bullhorn-to-geckoboard-dataset",
+  "description": "Fetches data from Bullhorn and sends to Geckoboard datasets",
+  "keywords": ["bullhorn", "geckoboard"],
+  "repository": "https://github.com/geckoboard/bullhorn-to-dataset",
+  "env": {
+    "GECKOBOARD_APIKEY": {
+      "description": "Your Geckoboard API key",
+      "generator": "secret"
+    },
+    "BULLHORN_USER": {
+      "description": "Your Bullhorn login username",
+      "generator": "secret"
+    },
+    "BULLHORN_PASS": {
+      "description": "Your Bullhorn login password",
+      "generator": "secret"
+    },
+    "GOVERSION": "go1.18"
+  },
+  "image": "heroku/golang",
+  "formation": {
+    "web": {}
+  },
+  "addons": [
+    {
+      "plan": "scheduler:standard",
+      "options": {
+        "jobs": [
+          {
+            "at":0,
+            "every":10,
+            "ran-at":null,
+            "create-at":null,
+            "updated-at":null,
+            "command":"bullhorn-to-dataset push --creds-from-env",
+            "dyno-size":"Free"
+          }
+        ]
+      }
+    }
+  ]
+}
