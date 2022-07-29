@@ -73,7 +73,48 @@ func TestProcessor_ProcessAll(t *testing.T) {
 	})
 
 	t.Run("runs each processor in the list", func(t *testing.T) {
+		gc := geckoboard.New("", "")
 
+		gc.DatasetService = mockDatasetService{
+			findOrCreateFn: func(got *geckoboard.Dataset) error {
+				return nil
+			},
+			appendDataFn: func(_ *geckoboard.Dataset, data geckoboard.Data) error {
+				return nil
+			},
+		}
+
+		calls := []string{}
+		proc, logs := defaultNewProcessor(gc, []datasetProcessor{
+			mockDatasetProcessor{
+				queryDataFn: func() (geckoboard.Data, error) {
+					calls = append(calls, "query mock 1")
+					return geckoboard.Data{}, nil
+				},
+				schemaFn: func() *geckoboard.Dataset {
+					return nil
+				},
+			},
+			mockDatasetProcessor{
+				queryDataFn: func() (geckoboard.Data, error) {
+					calls = append(calls, "query mock 2")
+					return geckoboard.Data{}, nil
+				},
+				schemaFn: func() *geckoboard.Dataset {
+					return nil
+				},
+			},
+		})
+
+		proc.ProcessAll(context.Background())
+		assert.DeepEqual(t, calls, []string{
+			"query mock 1",
+			"query mock 2",
+		})
+		assert.DeepEqual(t, logs.msgs, []string{
+			"Pushing 0 mock model records to geckoboard",
+			"Pushing 0 mock model records to geckoboard",
+		})
 	})
 
 	t.Run("processes successfully when no records", func(t *testing.T) {
