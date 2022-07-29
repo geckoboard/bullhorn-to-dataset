@@ -66,7 +66,9 @@ func TestProcessor_ProcessAll(t *testing.T) {
 		proc, logs := defaultNewProcessor(gc, defaultMockProcessor)
 		proc.ProcessAll(context.Background())
 
-		assert.DeepEqual(t, logs.msgs, []string{})
+		assert.DeepEqual(t, logs.msgs, []string{
+			"Pushing 2 mock model records to geckoboard",
+		})
 		assert.Assert(t, dataSent)
 	})
 
@@ -99,7 +101,9 @@ func TestProcessor_ProcessAll(t *testing.T) {
 		})
 
 		proc.ProcessAll(context.Background())
-		assert.DeepEqual(t, logs.msgs, []string{})
+		assert.DeepEqual(t, logs.msgs, []string{
+			"Pushing 0 mock model records to geckoboard",
+		})
 		assert.Assert(t, dataSent)
 	})
 
@@ -149,6 +153,7 @@ func TestProcessor_ProcessAll(t *testing.T) {
 		proc.ProcessAll(context.Background())
 
 		assert.DeepEqual(t, logs.msgs, []string{
+			"Pushing 2 mock model records to geckoboard",
 			"Pushing mock model data failed with error: push data error\n",
 		})
 	})
