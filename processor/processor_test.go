@@ -5,10 +5,14 @@ import (
 	"bullhorn-to-dataset/geckoboard"
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"gotest.tools/v3/assert"
+	"gotest.tools/v3/assert/cmp"
 )
+
+var defaultMockProcessor = []datasetProcessor{mockDatasetProcessor{}}
 
 func TestProcessor_New(t *testing.T) {
 	bc := &bullhorn.Client{}
@@ -16,100 +20,23 @@ func TestProcessor_New(t *testing.T) {
 
 	p := New(bc, gc)
 
-	assert.Equal(t, p.bullhornClient, bc)
 	assert.Equal(t, p.geckoboardClient, gc)
+	assert.Assert(t, cmp.Len(p.processors, 1))
 }
 
-var (
-	wantQueryFields = []string{
-		"id", "dateAdded", "dateClosed", "dateEnd", "status", "categories",
-		"employmentType", "title", "owner", "clientCorporation", "isOpen",
-	}
-
-	testJobOrders = []bullhorn.JobOrder{
-		{
-			ID:             4345,
-			Title:          "Automation engineer",
-			DateAdded:      1653214787000,
-			Status:         "Accepting Candidates",
-			EmploymentType: "Contract",
-			Owner: bullhorn.Owner{
-				FirstName: "Gustavo",
-				LastName:  "Fring",
-			},
-			Client: bullhorn.EntityWithName{
-				Name: "Los Pollos Hermanos",
-			},
-			Categories: bullhorn.Categories{
-				Data: []bullhorn.EntityWithName{
-					{Name: "Category B"},
-					{Name: "Category A"},
-				},
-			},
-		},
-		{
-			ID:             5555,
-			Title:          "CEO",
-			DateAdded:      1653204787000,
-			DateClosed:     1653214787000,
-			DateEnd:        1653214986000,
-			Status:         "Closed",
-			EmploymentType: "Permanent",
-			Owner: bullhorn.Owner{
-				FirstName: "Kim",
-				LastName:  "Wexler",
-			},
-			Client: bullhorn.EntityWithName{
-				Name: "Hamlin Hamlin McGill",
-			},
-		},
-		{
-			ID:             3333,
-			Title:          "Support role",
-			DateAdded:      1653204787000,
-			DateClosed:     1653214787000,
-			DateEnd:        1653214986000,
-			Status:         "Closed",
-			EmploymentType: "Contract",
-			Owner: bullhorn.Owner{
-				FirstName: "Saul",
-			},
-			Client: bullhorn.EntityWithName{
-				Name: "JMM",
-			},
-			Categories: bullhorn.Categories{
-				Data: []bullhorn.EntityWithName{
-					{Name: "Category C"},
-				},
-			},
-		},
-	}
-)
-
-func TestProcessor_Process(t *testing.T) {
-	t.Run("processes all records successfully", func(t *testing.T) {
-		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService(t, testJobOrders)
-
+func TestProcessor_ProcessAll(t *testing.T) {
+	t.Run("successfully creates dataset and pushes data", func(t *testing.T) {
 		gc := geckoboard.New("", "")
 		dataSent := false
 
 		gc.DatasetService = mockDatasetService{
 			findOrCreateFn: func(got *geckoboard.Dataset) error {
 				want := &geckoboard.Dataset{
-					Name: "bullhorn-joborders",
+					Name: "mock-model",
 					Fields: map[string]geckoboard.Field{
-						"id":                 {Name: "ID", Type: geckoboard.StringType, Optional: false},
-						"date_added":         {Name: "Created at", Type: geckoboard.DatetimeType, Optional: true},
-						"date_closed":        {Name: "Closed at", Type: geckoboard.DatetimeType, Optional: true},
-						"date_ended":         {Name: "Ended at", Type: geckoboard.DatetimeType, Optional: true},
-						"title":              {Name: "Title", Type: geckoboard.StringType, Optional: true},
-						"status":             {Name: "Status", Type: geckoboard.StringType, Optional: true},
-						"categories":         {Name: "Categories", Type: geckoboard.StringType, Optional: true},
-						"employment_type":    {Name: "Employment type", Type: geckoboard.StringType, Optional: true},
-						"owner":              {Name: "Owner", Type: geckoboard.StringType, Optional: true},
-						"client_corporation": {Name: "Client corporation", Type: geckoboard.StringType, Optional: true},
-						"open":               {Name: "Open", Type: geckoboard.StringType, Optional: true},
+						"id":     {Name: "ID", Type: geckoboard.StringType},
+						"field2": {Name: "Field 2", Type: geckoboard.DatetimeType, Optional: true},
+						"field3": {Name: "Field 3", Type: geckoboard.NumberType, Optional: true},
 					},
 					UniqueBy: []string{"id"},
 				}
@@ -119,241 +46,79 @@ func TestProcessor_Process(t *testing.T) {
 			appendDataFn: func(_ *geckoboard.Dataset, data geckoboard.Data) error {
 				dataSent = true
 
-				assert.Equal(t, len(data), 3)
+				assert.Equal(t, len(data), 2)
 				assert.DeepEqual(t, data, geckoboard.Data{
 					{
-						"categories":         "Category A ; Category B",
-						"client_corporation": "Los Pollos Hermanos",
-						"date_added":         stringPtr("2022-05-22T10:19:47Z"),
-						"date_closed":        (*string)(nil),
-						"date_ended":         (*string)(nil),
-						"employment_type":    "Contract",
-						"id":                 "4345",
-						"open":               "FALSE",
-						"owner":              stringPtr("Gustavo Fring"),
-						"status":             "Accepting Candidates",
-						"title":              "Automation engineer",
+						"id":     "4345",
+						"field2": "2022-05-05",
+						"field3": 44,
 					},
 					{
-						"categories":         "(not set)",
-						"client_corporation": "Hamlin Hamlin McGill",
-						"date_added":         stringPtr("2022-05-22T07:33:07Z"),
-						"date_closed":        stringPtr("2022-05-22T10:19:47Z"),
-						"date_ended":         stringPtr("2022-05-22T10:23:06Z"),
-						"employment_type":    "Permanent",
-						"id":                 "5555",
-						"open":               "FALSE",
-						"owner":              stringPtr("Kim Wexler"),
-						"status":             "Closed",
-						"title":              "CEO",
-					},
-					{
-						"categories":         "Category C",
-						"client_corporation": "JMM",
-						"date_added":         stringPtr("2022-05-22T07:33:07Z"),
-						"date_closed":        stringPtr("2022-05-22T10:19:47Z"),
-						"date_ended":         stringPtr("2022-05-22T10:23:06Z"),
-						"employment_type":    "Contract",
-						"id":                 "3333",
-						"open":               "FALSE",
-						"owner":              stringPtr("Saul"),
-						"status":             "Closed",
-						"title":              "Support role",
+						"id":     "5555",
+						"field2": "2022-06-05",
+						"field3": 66,
 					},
 				})
 				return nil
 			},
 		}
 
-		err := New(bc, gc).Process(context.Background())
-		assert.NilError(t, err)
+		proc, logs := defaultNewProcessor(gc, defaultMockProcessor)
+		proc.ProcessAll(context.Background())
+
+		assert.DeepEqual(t, logs.msgs, []string{})
 		assert.Assert(t, dataSent)
 	})
 
-	t.Run("paginates until records are less than the count", func(t *testing.T) {
-		bullhornRequests := 0
+	t.Run("runs each processor in the list", func(t *testing.T) {
+
+	})
+
+	t.Run("processes successfully when no records", func(t *testing.T) {
 		dataSent := false
 
-		bc := bullhorn.New("")
-		bc.JobOrderService = mockJobOrderService{
-			searchFn: func(got bullhorn.SearchQuery) (*bullhorn.JobOrders, error) {
-				bullhornRequests += 1
-				want := bullhorn.SearchQuery{
-					Fields: wantQueryFields,
-					Where:  "isDeleted=false",
-					Count:  2,
-				}
-
-				switch bullhornRequests {
-				case 1:
-					assert.DeepEqual(t, got, want)
-					return &bullhorn.JobOrders{
-						Items: testJobOrders[:2],
-					}, nil
-				case 2:
-					want.Start = 2 // Offset based on the count
-					assert.DeepEqual(t, got, want)
-
-					return &bullhorn.JobOrders{
-						Items: testJobOrders[2:],
-					}, nil
-				}
-
-				return nil, errors.New("shouldn't have got here")
-			},
-		}
-
 		gc := geckoboard.New("", "")
-
 		gc.DatasetService = mockDatasetService{
 			findOrCreateFn: func(got *geckoboard.Dataset) error {
 				return nil
 			},
 			appendDataFn: func(_ *geckoboard.Dataset, data geckoboard.Data) error {
 				dataSent = true
-
-				assert.Equal(t, len(data), 3)
-				assert.DeepEqual(t, data, geckoboard.Data{
-					{
-						"categories":         "Category A ; Category B",
-						"client_corporation": "Los Pollos Hermanos",
-						"date_added":         stringPtr("2022-05-22T10:19:47Z"),
-						"date_closed":        (*string)(nil),
-						"date_ended":         (*string)(nil),
-						"employment_type":    "Contract",
-						"id":                 "4345",
-						"open":               "FALSE",
-						"owner":              stringPtr("Gustavo Fring"),
-						"status":             "Accepting Candidates",
-						"title":              "Automation engineer",
-					},
-					{
-						"categories":         "(not set)",
-						"client_corporation": "Hamlin Hamlin McGill",
-						"date_added":         stringPtr("2022-05-22T07:33:07Z"),
-						"date_closed":        stringPtr("2022-05-22T10:19:47Z"),
-						"date_ended":         stringPtr("2022-05-22T10:23:06Z"),
-						"employment_type":    "Permanent",
-						"id":                 "5555",
-						"open":               "FALSE",
-						"owner":              stringPtr("Kim Wexler"),
-						"status":             "Closed",
-						"title":              "CEO",
-					},
-					{
-						"categories":         "Category C",
-						"client_corporation": "JMM",
-						"date_added":         stringPtr("2022-05-22T07:33:07Z"),
-						"date_closed":        stringPtr("2022-05-22T10:19:47Z"),
-						"date_ended":         stringPtr("2022-05-22T10:23:06Z"),
-						"employment_type":    "Contract",
-						"id":                 "3333",
-						"open":               "FALSE",
-						"owner":              stringPtr("Saul"),
-						"status":             "Closed",
-						"title":              "Support role",
-					},
-				})
+				assert.Equal(t, len(data), 0)
+				assert.DeepEqual(t, data, geckoboard.Data{})
 				return nil
 			},
 		}
 
-		p := New(bc, gc)
-		p.bullhornRecordCount = 2
+		proc, logs := defaultNewProcessor(gc, []datasetProcessor{
+			mockDatasetProcessor{
+				queryDataFn: func() (geckoboard.Data, error) {
+					return geckoboard.Data{}, nil
+				},
+			},
+		})
 
-		err := p.Process(context.Background())
-		assert.NilError(t, err)
+		proc.ProcessAll(context.Background())
+		assert.DeepEqual(t, logs.msgs, []string{})
 		assert.Assert(t, dataSent)
 	})
 
-	t.Run("processes only max dataset records", func(t *testing.T) {
-		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService(t, testJobOrders)
-
-		gc := geckoboard.New("", "")
-		dataSent := false
-		maxRecs := 2
-		gc.DatasetService = mockDatasetService{
-			findOrCreateFn: func(*geckoboard.Dataset) error {
-				return nil
+	t.Run("logs the error when data query fails", func(t *testing.T) {
+		proc, logs := defaultNewProcessor(geckoboard.New("", ""), []datasetProcessor{
+			mockDatasetProcessor{
+				queryDataFn: func() (geckoboard.Data, error) {
+					return geckoboard.Data{}, errors.New("query failed")
+				},
 			},
-			appendDataFn: func(_ *geckoboard.Dataset, data geckoboard.Data) error {
-				dataSent = true
-				assert.Equal(t, len(data), maxRecs)
-				assert.DeepEqual(t, data, geckoboard.Data{
-					{
-						"categories":         "Category A ; Category B",
-						"client_corporation": "Los Pollos Hermanos",
-						"date_added":         stringPtr("2022-05-22T10:19:47Z"),
-						"date_closed":        (*string)(nil),
-						"date_ended":         (*string)(nil),
-						"employment_type":    "Contract",
-						"id":                 "4345",
-						"open":               "FALSE",
-						"owner":              stringPtr("Gustavo Fring"),
-						"status":             "Accepting Candidates",
-						"title":              "Automation engineer",
-					},
-					{
-						"categories":         "(not set)",
-						"client_corporation": "Hamlin Hamlin McGill",
-						"date_added":         stringPtr("2022-05-22T07:33:07Z"),
-						"date_closed":        stringPtr("2022-05-22T10:19:47Z"),
-						"date_ended":         stringPtr("2022-05-22T10:23:06Z"),
-						"employment_type":    "Permanent",
-						"id":                 "5555",
-						"open":               "FALSE",
-						"owner":              stringPtr("Kim Wexler"),
-						"status":             "Closed",
-						"title":              "CEO",
-					},
-				})
-				return nil
-			},
-		}
+		})
 
-		p := New(bc, gc)
-		p.maxDatasetRecords = maxRecs
-
-		err := p.Process(context.Background())
-		assert.NilError(t, err)
-		assert.Assert(t, dataSent)
+		proc.ProcessAll(context.Background())
+		assert.DeepEqual(t, logs.msgs, []string{
+			"Fetching data for mock model failed with error: query failed\n",
+		})
 	})
 
-	t.Run("processes when no job order records", func(t *testing.T) {
-		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService(t, []bullhorn.JobOrder{})
-
-		gc := geckoboard.New("", "")
-		gc.DatasetService = mockDatasetService{
-			findOrCreateFn: func(*geckoboard.Dataset) error {
-				return nil
-			},
-			appendDataFn: func(*geckoboard.Dataset, geckoboard.Data) error {
-				return nil
-			},
-		}
-
-		err := New(bc, gc).Process(context.Background())
-		assert.NilError(t, err)
-	})
-
-	t.Run("returns error when job query fails", func(t *testing.T) {
-		bc := bullhorn.New("")
-		bc.JobOrderService = mockJobOrderService{
-			searchFn: func(q bullhorn.SearchQuery) (*bullhorn.JobOrders, error) {
-				return nil, errors.New("query job orders failed")
-			},
-		}
-
-		err := New(bc, nil).Process(context.Background())
-		assert.Error(t, err, "query job orders failed")
-	})
-
-	t.Run("returns error when geckoboard find or create dataset fails", func(t *testing.T) {
-		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService(t, []bullhorn.JobOrder{{}})
-
+	t.Run("logs the error when geckoboard find or create dataset fails", func(t *testing.T) {
 		gc := geckoboard.New("", "")
 		gc.DatasetService = mockDatasetService{
 			findOrCreateFn: func(*geckoboard.Dataset) error {
@@ -361,14 +126,15 @@ func TestProcessor_Process(t *testing.T) {
 			},
 		}
 
-		err := New(bc, gc).Process(context.Background())
-		assert.Error(t, err, "failed to create dataset")
+		proc, logs := defaultNewProcessor(gc, defaultMockProcessor)
+		proc.ProcessAll(context.Background())
+
+		assert.DeepEqual(t, logs.msgs, []string{
+			"Creating mock model dataset failed with error: failed to create dataset\n",
+		})
 	})
 
-	t.Run("returns error when geckoboard find or create dataset fails", func(t *testing.T) {
-		bc := bullhorn.New("")
-		bc.JobOrderService = newJobOrderService(t, []bullhorn.JobOrder{{}})
-
+	t.Run("logs the error when geckoboard find or create dataset fails", func(t *testing.T) {
 		gc := geckoboard.New("", "")
 		gc.DatasetService = mockDatasetService{
 			findOrCreateFn: func(*geckoboard.Dataset) error {
@@ -379,12 +145,37 @@ func TestProcessor_Process(t *testing.T) {
 			},
 		}
 
-		err := New(bc, gc).Process(context.Background())
-		assert.Error(t, err, "push data error")
+		proc, logs := defaultNewProcessor(gc, defaultMockProcessor)
+		proc.ProcessAll(context.Background())
+
+		assert.DeepEqual(t, logs.msgs, []string{
+			"Pushing mock model data failed with error: push data error\n",
+		})
 	})
 }
 
-// Mocks for the clients
+func defaultNewProcessor(gc *geckoboard.Client, processors []datasetProcessor) (Processor, *mockLogPrinter) {
+	mockPrinter := &mockLogPrinter{
+		msgs: []string{},
+	}
+
+	return Processor{
+		processors:       processors,
+		geckoboardClient: gc,
+		printer:          mockPrinter,
+	}, mockPrinter
+}
+
+// Mock log printer
+type mockLogPrinter struct {
+	msgs []string
+}
+
+func (m *mockLogPrinter) Printf(format string, v ...interface{}) {
+	m.msgs = append(m.msgs, fmt.Sprintf(format, v...))
+}
+
+// Mock Geckoboard service
 
 type mockDatasetService struct {
 	findOrCreateFn func(*geckoboard.Dataset) error
@@ -399,31 +190,59 @@ func (m mockDatasetService) AppendData(_ context.Context, dataset *geckoboard.Da
 	return m.appendDataFn(dataset, data)
 }
 
-type mockJobOrderService struct {
-	searchFn func(bullhorn.SearchQuery) (*bullhorn.JobOrders, error)
+// Mock processor
+
+type mockDatasetProcessor struct {
+	queryDataFn func() (geckoboard.Data, error)
+	schemaFn    func() *geckoboard.Dataset
 }
 
-func newJobOrderService(t *testing.T, recs []bullhorn.JobOrder) mockJobOrderService {
-	return mockJobOrderService{
-		searchFn: func(got bullhorn.SearchQuery) (*bullhorn.JobOrders, error) {
-			want := bullhorn.SearchQuery{
-				Fields: wantQueryFields,
-				Where:  "isDeleted=false",
-				Count:  200,
-			}
+func (m mockDatasetProcessor) String() string {
+	return "mock model"
+}
 
-			assert.DeepEqual(t, got, want)
-			return &bullhorn.JobOrders{
-				Items: recs,
-			}, nil
-		},
+func (m mockDatasetProcessor) QueryData(context.Context) (geckoboard.Data, error) {
+	if m.queryDataFn != nil {
+		return m.queryDataFn()
 	}
+
+	return geckoboard.Data{
+		{
+			"id":     "4345",
+			"field2": "2022-05-05",
+			"field3": 44,
+		},
+		{
+			"id":     "5555",
+			"field2": "2022-06-05",
+			"field3": 66,
+		},
+	}, nil
 }
 
-func (m mockJobOrderService) Search(_ context.Context, query bullhorn.SearchQuery) (*bullhorn.JobOrders, error) {
-	return m.searchFn(query)
-}
+func (m mockDatasetProcessor) Schema() *geckoboard.Dataset {
+	if m.schemaFn != nil {
+		return m.schemaFn()
+	}
 
-func stringPtr(val string) *string {
-	return &val
+	return &geckoboard.Dataset{
+		Name: "mock-model",
+		Fields: map[string]geckoboard.Field{
+			"id": {
+				Name: "ID",
+				Type: geckoboard.StringType,
+			},
+			"field2": {
+				Name:     "Field 2",
+				Type:     geckoboard.DatetimeType,
+				Optional: true,
+			},
+			"field3": {
+				Name:     "Field 3",
+				Type:     geckoboard.NumberType,
+				Optional: true,
+			},
+		},
+		UniqueBy: []string{"id"},
+	}
 }

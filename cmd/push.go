@@ -48,10 +48,7 @@ func PushCommand() *cobra.Command {
 				fmt.Printf("Success\nQuerying data from Bullhorn\n")
 
 				gc := geckoboard.New(conf.GeckoboardHost, conf.GeckoboardAPIKey)
-				job := processor.New(bc, gc)
-				if err := job.Process(ctx); err != nil {
-					log.Fatal(err)
-				}
+				processor.New(bc, gc).ProcessAll(ctx)
 
 				if singleRun {
 					fmt.Println("Finished")
