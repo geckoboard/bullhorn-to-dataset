@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"testing"
-	"time"
 
 	"gotest.tools/v3/assert"
 )
@@ -120,13 +119,6 @@ func TestJobOrderService_Search(t *testing.T) {
 
 		_, err := jos.Search(context.Background(), SearchQuery{})
 		assert.ErrorType(t, err, &json.SyntaxError{})
-	})
-}
-
-func TestEpochMilli_Time(t *testing.T) {
-	t.Run("returns parsed time value", func(t *testing.T) {
-		unix := EpochMilli(1653215692000)
-		assert.DeepEqual(t, unix.Time(), time.Date(2022, 5, 22, 10, 34, 52, 0, time.UTC))
 	})
 }
 

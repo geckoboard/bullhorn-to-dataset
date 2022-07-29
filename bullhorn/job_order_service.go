@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type JobOrderService interface {
@@ -17,15 +16,6 @@ type JobOrderService interface {
 type jobOrderService struct {
 	baseURL string
 	client  *Client
-}
-
-// SearchQuery defines the query params required
-// for a successfully job order search request
-type SearchQuery struct {
-	Fields []string
-	Where  string
-	Start  int
-	Count  int
 }
 
 type JobOrders struct {
@@ -48,18 +38,8 @@ type JobOrder struct {
 	IsOpen         bool           `json:"isOpen"`
 }
 
-type EpochMilli uint64
-
-func (e EpochMilli) Time() time.Time {
-	return time.UnixMilli(int64(e)).UTC()
-}
-
 type Categories struct {
 	Data []EntityWithName `json:"data"`
-}
-
-type EntityWithName struct {
-	Name string `json:"name"`
 }
 
 type Owner struct {
