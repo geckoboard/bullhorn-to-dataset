@@ -21,7 +21,13 @@ func TestProcessor_New(t *testing.T) {
 	p := New(bc, gc)
 
 	assert.Equal(t, p.geckoboardClient, gc)
-	assert.Assert(t, cmp.Len(p.processors, 1))
+	assert.Assert(t, cmp.Len(p.processors, 2))
+
+	_, isJobOrderProcessor := p.processors[0].(jobOrderProcessor)
+	_, isPlacementProcessor := p.processors[1].(*placementProcessor)
+
+	assert.Assert(t, isJobOrderProcessor)
+	assert.Assert(t, isPlacementProcessor)
 }
 
 func TestProcessor_ProcessAll(t *testing.T) {
