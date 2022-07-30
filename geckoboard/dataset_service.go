@@ -25,6 +25,7 @@ const (
 	NumberType   FieldType = "number"
 	DatetimeType FieldType = "datetime"
 	StringType   FieldType = "string"
+	PercentType  FieldType = "percentage"
 )
 
 type Dataset struct {
