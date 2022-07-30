@@ -67,7 +67,7 @@ func TestProcessor_ProcessAll(t *testing.T) {
 		proc.ProcessAll(context.Background())
 
 		assert.DeepEqual(t, logs.msgs, []string{
-			"Pushing 2 mock model records to geckoboard",
+			"Pushing 2 mock model records to geckoboard\n",
 		})
 		assert.Assert(t, dataSent)
 	})
@@ -112,8 +112,8 @@ func TestProcessor_ProcessAll(t *testing.T) {
 			"query mock 2",
 		})
 		assert.DeepEqual(t, logs.msgs, []string{
-			"Pushing 0 mock model records to geckoboard",
-			"Pushing 0 mock model records to geckoboard",
+			"Pushing 0 mock model records to geckoboard\n",
+			"Pushing 0 mock model records to geckoboard\n",
 		})
 	})
 
@@ -143,7 +143,7 @@ func TestProcessor_ProcessAll(t *testing.T) {
 
 		proc.ProcessAll(context.Background())
 		assert.DeepEqual(t, logs.msgs, []string{
-			"Pushing 0 mock model records to geckoboard",
+			"Pushing 0 mock model records to geckoboard\n",
 		})
 		assert.Assert(t, dataSent)
 	})
@@ -194,7 +194,7 @@ func TestProcessor_ProcessAll(t *testing.T) {
 		proc.ProcessAll(context.Background())
 
 		assert.DeepEqual(t, logs.msgs, []string{
-			"Pushing 2 mock model records to geckoboard",
+			"Pushing 2 mock model records to geckoboard\n",
 			"Pushing mock model data failed with error: push data error\n",
 		})
 	})

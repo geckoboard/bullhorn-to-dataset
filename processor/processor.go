@@ -58,7 +58,7 @@ func (p Processor) ProcessAll(ctx context.Context) {
 			continue
 		}
 
-		p.printer.Printf("Pushing %d %s records to geckoboard", len(data), dp)
+		p.printer.Printf("Pushing %d %s records to geckoboard\n", len(data), dp)
 		if err := p.geckoboardClient.DatasetService.AppendData(ctx, dataset, data); err != nil {
 			p.printer.Printf("Pushing %s data failed with error: %s\n", dp, err)
 			continue
