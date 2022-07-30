@@ -13,8 +13,9 @@ type Client struct {
 	client *http.Client
 	token  string
 
-	AuthService     AuthService
-	JobOrderService JobOrderService
+	AuthService      AuthService
+	JobOrderService  JobOrderService
+	PlacementService PlacementService
 }
 
 func New(baseURL string) *Client {
@@ -28,7 +29,8 @@ func New(baseURL string) *Client {
 	// they have a specific URL and token returned
 	// from the login action so these are a nullService
 	// implementing the JobOrderService which just return an error
-	c.JobOrderService = nullSessionService{}
+	c.JobOrderService = nullJobOrderService{}
+	c.PlacementService = nullPlacementService{}
 
 	return c
 }
@@ -37,6 +39,7 @@ func (c *Client) setSession(s Session) {
 	c.token = s.Value.Token
 
 	c.JobOrderService = &jobOrderService{client: c, baseURL: s.Value.Endpoint}
+	c.PlacementService = &placementService{client: c, baseURL: s.Value.Endpoint}
 }
 
 func (c *Client) buildURL(baseURL, path string, params url.Values) string {

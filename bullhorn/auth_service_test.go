@@ -42,13 +42,15 @@ func TestAuthService_Login(t *testing.T) {
 
 		auth := &authService{client: New(server.URL), baseURL: server.URL}
 		assert.Equal(t, auth.client.token, "")
-		assert.Equal(t, fmt.Sprintf("%T", auth.client.JobOrderService), "bullhorn.nullSessionService")
+		assert.Equal(t, fmt.Sprintf("%T", auth.client.JobOrderService), "bullhorn.nullJobOrderService")
+		assert.Equal(t, fmt.Sprintf("%T", auth.client.PlacementService), "bullhorn.nullPlacementService")
 
 		err := auth.Login(context.Background(), "my-username", "my-password")
 		assert.NilError(t, err)
 
 		assert.Equal(t, auth.client.token, "tok-123")
 		assert.Equal(t, fmt.Sprintf("%T", auth.client.JobOrderService), "*bullhorn.jobOrderService")
+		assert.Equal(t, fmt.Sprintf("%T", auth.client.PlacementService), "*bullhorn.placementService")
 	})
 
 	t.Run("returns error when rest session not found", func(t *testing.T) {

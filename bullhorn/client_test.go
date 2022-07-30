@@ -22,7 +22,14 @@ func TestClient_New(t *testing.T) {
 	t.Run("returns job service as null service", func(t *testing.T) {
 		c := New("http://example.com")
 
-		_, ok := c.JobOrderService.(nullSessionService)
+		_, ok := c.JobOrderService.(nullJobOrderService)
+		assert.Assert(t, ok)
+	})
+
+	t.Run("returns placement service as null service", func(t *testing.T) {
+		c := New("http://example.com")
+
+		_, ok := c.PlacementService.(nullPlacementService)
 		assert.Assert(t, ok)
 	})
 }

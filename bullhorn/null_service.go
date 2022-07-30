@@ -7,10 +7,13 @@ import (
 
 var errMissingSession = errors.New("You must login with the auth service before using this service")
 
-type nullSessionService struct {
-	JobOrderService
+type nullJobOrderService struct{ JobOrderService }
+type nullPlacementService struct{ PlacementService }
+
+func (nullJobOrderService) Search(context.Context, SearchQuery) (*JobOrders, error) {
+	return nil, errMissingSession
 }
 
-func (nullSessionService) Search(context.Context, SearchQuery) (*JobOrders, error) {
+func (nullPlacementService) Search(context.Context, SearchQuery) (*Placements, error) {
 	return nil, errMissingSession
 }
