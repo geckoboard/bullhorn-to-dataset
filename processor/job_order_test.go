@@ -69,11 +69,11 @@ var (
 				FirstName: "Gustavo",
 				LastName:  "Fring",
 			},
-			Client: bullhorn.EntityWithName{
+			Client: bullhorn.NestedEntity{
 				Name: "Los Pollos Hermanos",
 			},
 			Categories: bullhorn.Categories{
-				Data: []bullhorn.EntityWithName{
+				Data: []bullhorn.NestedEntity{
 					{Name: "Category B"},
 					{Name: "Category A"},
 				},
@@ -91,7 +91,7 @@ var (
 				FirstName: "Kim",
 				LastName:  "Wexler",
 			},
-			Client: bullhorn.EntityWithName{
+			Client: bullhorn.NestedEntity{
 				Name: "Hamlin Hamlin McGill",
 			},
 		},
@@ -106,11 +106,11 @@ var (
 			Owner: bullhorn.Owner{
 				FirstName: "Saul",
 			},
-			Client: bullhorn.EntityWithName{
+			Client: bullhorn.NestedEntity{
 				Name: "JMM",
 			},
 			Categories: bullhorn.Categories{
-				Data: []bullhorn.EntityWithName{
+				Data: []bullhorn.NestedEntity{
 					{Name: "Category C"},
 				},
 			},

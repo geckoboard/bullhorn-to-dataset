@@ -24,11 +24,11 @@ func TestJobOrderService_Search(t *testing.T) {
 						FirstName: "Sooo",
 						LastName:  "Goodman",
 					},
-					Client: EntityWithName{
+					Client: NestedEntity{
 						Name: "GeckoOrg",
 					},
 					Categories: Categories{
-						Data: []EntityWithName{
+						Data: []NestedEntity{
 							{Name: "Category A"},
 							{Name: "Category B"},
 						},
@@ -46,7 +46,7 @@ func TestJobOrderService_Search(t *testing.T) {
 						FirstName: "Sooo",
 						LastName:  "Goodman",
 					},
-					Client: EntityWithName{
+					Client: NestedEntity{
 						Name: "GeckoOrg",
 					},
 				},
@@ -146,7 +146,7 @@ func TestOwner_FullName(t *testing.T) {
 func TestCategories_Join(t *testing.T) {
 	t.Run("returns categories joined and sorted", func(t *testing.T) {
 		c := Categories{
-			Data: []EntityWithName{
+			Data: []NestedEntity{
 				{Name: "Cat A"},
 				{Name: "Architure"},
 			},

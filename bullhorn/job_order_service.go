@@ -29,17 +29,17 @@ type JobOrder struct {
 	DateClosed EpochMilli `json:"dateClosed,omitempty"`
 	DateEnd    EpochMilli `json:"dateEnd,omitempty"`
 
-	Status         string         `json:"status"`
-	Categories     Categories     `json:"categories"`
-	EmploymentType string         `json:"employmentType"`
-	Title          string         `json:"title"`
-	Owner          Owner          `json:"owner"`
-	Client         EntityWithName `json:"clientCorporation"`
-	IsOpen         bool           `json:"isOpen"`
+	Status         string       `json:"status"`
+	Categories     Categories   `json:"categories"`
+	EmploymentType string       `json:"employmentType"`
+	Title          string       `json:"title"`
+	Owner          Owner        `json:"owner"`
+	Client         NestedEntity `json:"clientCorporation"`
+	IsOpen         bool         `json:"isOpen"`
 }
 
 type Categories struct {
-	Data []EntityWithName `json:"data"`
+	Data []NestedEntity `json:"data"`
 }
 
 type Owner struct {

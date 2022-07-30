@@ -17,8 +17,10 @@ func (e EpochMilli) Time() time.Time {
 	return time.UnixMilli(int64(e)).UTC()
 }
 
-type EntityWithName struct {
-	Name string `json:"name"`
+type NestedEntity struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Title string `json:"title"`
 }
 
 func (e EpochMilli) String() string {
