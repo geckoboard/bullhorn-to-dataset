@@ -26,3 +26,24 @@ func TestEpochMilli_String(t *testing.T) {
 
 	})
 }
+
+func TestPerson_FullName(t *testing.T) {
+	t.Run("returns nil", func(t *testing.T) {
+		assert.Assert(t, Person{}.FullName() == nil)
+	})
+
+	t.Run("returns first name", func(t *testing.T) {
+		o := Person{FirstName: "John"}
+		assert.Equal(t, *o.FullName(), "John")
+	})
+
+	t.Run("returns last name", func(t *testing.T) {
+		o := Person{LastName: "Smith"}
+		assert.Equal(t, *o.FullName(), "Smith")
+	})
+
+	t.Run("returns full name", func(t *testing.T) {
+		o := Person{FirstName: "John", LastName: "Smith"}
+		assert.Equal(t, *o.FullName(), "John Smith")
+	})
+}

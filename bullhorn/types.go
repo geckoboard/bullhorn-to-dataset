@@ -1,6 +1,10 @@
 package bullhorn
 
-import "time"
+import (
+	"fmt"
+	"strings"
+	"time"
+)
 
 // SearchQuery defines the query params required
 // for a successful entity search request
@@ -29,4 +33,22 @@ func (e EpochMilli) String() string {
 	}
 
 	return e.Time().Format(time.RFC3339)
+}
+
+type Owners struct {
+	Items []Person `json:"data"`
+}
+
+type Person struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+func (p Person) FullName() *string {
+	if p.FirstName == "" && p.LastName == "" {
+		return nil
+	}
+
+	val := strings.TrimSpace(fmt.Sprintf("%s %s", p.FirstName, p.LastName))
+	return &val
 }
