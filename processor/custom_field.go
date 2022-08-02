@@ -50,7 +50,7 @@ type customField struct {
 type customFields []customField
 
 func (cfs *customFields) fetchAndValidateCustomFields(entity string, rules map[string]int) error {
-	env := os.Getenv(fmt.Sprintf("%s_CUSTOMFIELDS", strings.ToUpper(entity)))
+	env := os.Getenv(fmt.Sprintf("%s_CUSTOMFIELDS", strings.ReplaceAll(strings.ToUpper(entity), " ", "")))
 	if env == "" {
 		return nil
 	}
