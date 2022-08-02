@@ -63,11 +63,10 @@ To use the environment variables you will need to need to pass the switch `--cre
 Both the job submissions and placements have a load of custom fields that you might want to pull in into the dataset.
 This is possible with only environment variables. The environment variable follows the following rule `ENTITY_CUSTOMFIELDS`
 
-So for placements the environment variable will be `PLACEMENT_CUSTOMFIELDS` and for job submissions `JOBSUBMISSION_CUSTOMFIELDS`
+So for placements the environment variable will be `PLACEMENT_CUSTOMFIELDS`. For job submissions its `JOBSUBMISSION_CUSTOMFIELDS`,
+and for client contacts its `CONTACT_CUSTOMFIELDS`.
 
 You can specify a list of comma seperated values of as many fields a dataset can accept.
-
-Example
 
 ```
 PLACEMENT_CUSTOMFIELDS=customDate1,customText10,customText22,customFloat3,customFloat4
