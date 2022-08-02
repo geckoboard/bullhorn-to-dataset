@@ -64,7 +64,7 @@ func (j jobOrderProcessor) Schema() *geckoboard.Dataset {
 				Optional: false,
 			},
 			"date_added": {
-				Name: "Created at", Type: geckoboard.DatetimeType,
+				Name: "Date added", Type: geckoboard.DatetimeType,
 				Optional: true,
 			},
 			"date_closed": {

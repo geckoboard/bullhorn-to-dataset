@@ -134,7 +134,7 @@ func TestJobOrder_Schema(t *testing.T) {
 				Optional: false,
 			},
 			"date_added": {
-				Name: "Created at", Type: geckoboard.DatetimeType,
+				Name: "Date added", Type: geckoboard.DatetimeType,
 				Optional: true,
 			},
 			"date_closed": {
