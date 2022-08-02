@@ -17,6 +17,7 @@ type Client struct {
 	JobOrderService      JobOrderService
 	PlacementService     PlacementService
 	JobSubmissionService JobSubmissionService
+	ClientContactService ClientContactService
 }
 
 func New(baseURL string) *Client {
@@ -29,10 +30,11 @@ func New(baseURL string) *Client {
 	// These can't be used before having logged in because
 	// they have a specific URL and token returned
 	// from the login action so these are a nullService
-	// implementing the JobOrderService which just return an error
+	// implementing the relevant interface which just return an error
 	c.JobOrderService = nullJobOrderService{}
 	c.PlacementService = nullPlacementService{}
 	c.JobSubmissionService = nullJobSubmissionService{}
+	c.ClientContactService = nullClientContactService{}
 
 	return c
 }
@@ -43,6 +45,7 @@ func (c *Client) setSession(s Session) {
 	c.JobOrderService = &jobOrderService{client: c, baseURL: s.Value.Endpoint}
 	c.PlacementService = &placementService{client: c, baseURL: s.Value.Endpoint}
 	c.JobSubmissionService = &jobSubmissionService{client: c, baseURL: s.Value.Endpoint}
+	c.ClientContactService = &clientContactService{client: c, baseURL: s.Value.Endpoint}
 }
 
 func (c *Client) buildURL(baseURL, path string, params url.Values) string {
