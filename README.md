@@ -1,14 +1,14 @@
 # Bullhorn to geckoboard dataset
 
-Push Bullhorn data into your Geckoboard dataset
+Push Bullhorn data such job orders, job submissions and placements Geckoboard datasets
 
 ## Quickstart
 
 ### 1. Download the app
 
-* macOS [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-darwin-amd64) / [arm64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-darwin-arm64)
-* Linux [x86](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-linux-386) / [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-linux-amd64)
-* Windows [x86](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-windows-386.exe) / [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v0.0.1/bullhorn-to-dataset-windows-amd64.exe)
+* macOS [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v1.0.0/bullhorn-to-dataset-darwin-amd64) / [arm64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v1.0.0/bullhorn-to-dataset-darwin-arm64)
+* Linux [x86](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v1.0.0/bullhorn-to-dataset-linux-386) / [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v1.0.0/bullhorn-to-dataset-linux-amd64)
+* Windows [x86](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v1.0.0/bullhorn-to-dataset-windows-386.exe) / [x64](https://github.com/jnormington/bullhorn-to-dataset/releases/download/v1.0.0/bullhorn-to-dataset-windows-amd64.exe)
 
 #### Make it executable (macOS / Linux)
 
@@ -57,6 +57,23 @@ BULLHORN_PASS=password
 ```
 
 To use the environment variables you will need to need to pass the switch `--creds-from-env` after the push command.
+
+##### Other environment variables
+
+Both the job submissions and placements have a load of custom fields that you might want to pull in into the dataset.
+This is possible with only environment variables. The environment variable follows the following rule `ENTITY_CUSTOMFIELDS`
+
+So for placements the environment variable will be `PLACEMENT_CUSTOMFIELDS` and for job submissions `JOBSUBMISSION_CUSTOMFIELDS`
+
+You can specify a list of comma seperated values of as many fields a dataset can accept.
+
+Example
+
+```
+PLACEMENT_CUSTOMFIELDS=customDate1,customText10,customText22,customFloat3,customFloat4
+```
+
+If you specify an invalid custom field or a valid field but out of range you will get the appropriate error message to help
 
 ### Geckoboard API
 
