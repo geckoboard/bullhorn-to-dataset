@@ -32,4 +32,11 @@ func TestClient_New(t *testing.T) {
 		_, ok := c.PlacementService.(nullPlacementService)
 		assert.Assert(t, ok)
 	})
+
+	t.Run("returns job sumission as null service", func(t *testing.T) {
+		c := New("http://example.com")
+
+		_, ok := c.JobSubmissionService.(nullJobSubmissionService)
+		assert.Assert(t, ok)
+	})
 }

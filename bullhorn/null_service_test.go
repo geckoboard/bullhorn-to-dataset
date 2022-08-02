@@ -19,4 +19,10 @@ func TestNullSessionService(t *testing.T) {
 		_, err := n.Search(context.Background(), SearchQuery{})
 		assert.Error(t, err, errMissingSession.Error())
 	})
+
+	t.Run("returns a missing session error when placement", func(t *testing.T) {
+		n := nullJobSubmissionService{}
+		_, err := n.Search(context.Background(), SearchQuery{})
+		assert.Error(t, err, errMissingSession.Error())
+	})
 }
