@@ -46,6 +46,11 @@ func New(bc *bullhorn.Client, gc *geckoboard.Client) Processor {
 				maxDatasetRecords: maxDatasetRecords,
 				recordsPerPage:    maxRecordsPerPage,
 			},
+			&clientContactProcessor{
+				client:            bc,
+				maxDatasetRecords: maxDatasetRecords,
+				recordsPerPage:    maxRecordsPerPage,
+			},
 		},
 		printer: printer.LogPrinter{},
 	}
