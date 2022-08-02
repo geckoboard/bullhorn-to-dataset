@@ -65,7 +65,7 @@ var (
 			DateAdded:      1653214787000,
 			Status:         "Accepting Candidates",
 			EmploymentType: "Contract",
-			Owner: bullhorn.Owner{
+			Owner: bullhorn.Person{
 				FirstName: "Gustavo",
 				LastName:  "Fring",
 			},
@@ -87,7 +87,7 @@ var (
 			DateEnd:        1653214986000,
 			Status:         "Closed",
 			EmploymentType: "Permanent",
-			Owner: bullhorn.Owner{
+			Owner: bullhorn.Person{
 				FirstName: "Kim",
 				LastName:  "Wexler",
 			},
@@ -103,7 +103,7 @@ var (
 			DateEnd:        1653214986000,
 			Status:         "Closed",
 			EmploymentType: "Contract",
-			Owner: bullhorn.Owner{
+			Owner: bullhorn.Person{
 				FirstName: "Saul",
 			},
 			Client: bullhorn.NestedEntity{

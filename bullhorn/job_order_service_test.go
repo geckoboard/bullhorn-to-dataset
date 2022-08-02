@@ -20,7 +20,7 @@ func TestJobOrderService_Search(t *testing.T) {
 					DateAdded:      1653214787000,
 					Status:         "Accepting Candidates",
 					EmploymentType: "Contract",
-					Owner: Owner{
+					Owner: Person{
 						FirstName: "Sooo",
 						LastName:  "Goodman",
 					},
@@ -42,7 +42,7 @@ func TestJobOrderService_Search(t *testing.T) {
 					DateEnd:        1653214986000,
 					Status:         "Closed",
 					EmploymentType: "Permanent",
-					Owner: Owner{
+					Owner: Person{
 						FirstName: "Sooo",
 						LastName:  "Goodman",
 					},
@@ -119,27 +119,6 @@ func TestJobOrderService_Search(t *testing.T) {
 
 		_, err := jos.Search(context.Background(), SearchQuery{})
 		assert.ErrorType(t, err, &json.SyntaxError{})
-	})
-}
-
-func TestOwner_FullName(t *testing.T) {
-	t.Run("returns nil", func(t *testing.T) {
-		assert.Assert(t, Owner{}.FullName() == nil)
-	})
-
-	t.Run("returns first name", func(t *testing.T) {
-		o := Owner{FirstName: "John"}
-		assert.Equal(t, *o.FullName(), "John")
-	})
-
-	t.Run("returns last name", func(t *testing.T) {
-		o := Owner{LastName: "Smith"}
-		assert.Equal(t, *o.FullName(), "Smith")
-	})
-
-	t.Run("returns full name", func(t *testing.T) {
-		o := Owner{FirstName: "John", LastName: "Smith"}
-		assert.Equal(t, *o.FullName(), "John Smith")
 	})
 }
 

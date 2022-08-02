@@ -2,7 +2,6 @@ package bullhorn
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"sort"
 	"strconv"
@@ -33,27 +32,13 @@ type JobOrder struct {
 	Categories     Categories   `json:"categories"`
 	EmploymentType string       `json:"employmentType"`
 	Title          string       `json:"title"`
-	Owner          Owner        `json:"owner"`
+	Owner          Person       `json:"owner"`
 	Client         NestedEntity `json:"clientCorporation"`
 	IsOpen         bool         `json:"isOpen"`
 }
 
 type Categories struct {
 	Data []NestedEntity `json:"data"`
-}
-
-type Owner struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-}
-
-func (o Owner) FullName() *string {
-	if o.FirstName == "" && o.LastName == "" {
-		return nil
-	}
-
-	val := strings.TrimSpace(fmt.Sprintf("%s %s", o.FirstName, o.LastName))
-	return &val
 }
 
 func (c Categories) Join() string {
