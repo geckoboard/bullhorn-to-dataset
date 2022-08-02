@@ -6,16 +6,11 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"os"
-	"reflect"
-	"regexp"
 	"strconv"
-	"strings"
 )
 
 var (
-	customFieldRegexp   = regexp.MustCompile(`^(custom)(Date|Text|Float)(\d{1,2})$`)
-	customFieldMaxRange = map[string]int{
+	placementCustomFieldRules = map[string]int{
 		"Date":  13,
 		"Text":  60,
 		"Float": 23,
@@ -27,7 +22,7 @@ type placementProcessor struct {
 
 	maxDatasetRecords int
 	recordsPerPage    int
-	customFields      []customField
+	customFields      customFields
 }
 
 func (placementProcessor) String() string {
@@ -35,7 +30,7 @@ func (placementProcessor) String() string {
 }
 
 func (p *placementProcessor) QueryData(ctx context.Context) (geckoboard.Data, error) {
-	if err := p.fetchAndValidateCustomFields(); err != nil {
+	if err := p.customFields.fetchAndValidateCustomFields(p.String(), placementCustomFieldRules); err != nil {
 		return nil, err
 	}
 
@@ -67,7 +62,7 @@ func (p *placementProcessor) QueryData(ctx context.Context) (geckoboard.Data, er
 			"status":            r.Status,
 		}
 
-		p.extractCustomFieldData(r, entry)
+		p.customFields.extractCustomFieldData(r, entry)
 		data = append(data, entry)
 	}
 
@@ -139,7 +134,7 @@ func (p *placementProcessor) Schema() *geckoboard.Dataset {
 		},
 	}
 
-	p.extractCustomFieldsForSchema(datasetFields)
+	p.customFields.extractCustomFieldsForSchema(datasetFields)
 
 	return &geckoboard.Dataset{
 		Name:     "bullhorn-placements",
@@ -181,120 +176,5 @@ func (p *placementProcessor) queryPlacements(ctx context.Context) ([]bullhorn.Pl
 		}
 
 		query.Start = query.Count + query.Start
-	}
-}
-
-type customFieldError struct {
-	field      string
-	fieldValid bool
-
-	underRange bool
-	maxRange   int
-}
-
-func (e customFieldError) Error() string {
-	if !e.fieldValid {
-		return fmt.Sprintf("unknown placement field %q, only customDate0, customText0 and customFloat0 are valid", e.field)
-	}
-
-	if e.underRange {
-		return fmt.Sprintf("custom placement field %q, is out of range min field number is 1", e.field)
-	}
-
-	return fmt.Sprintf("custom placement field %q, is out of range max field number is %d", e.field, e.maxRange)
-}
-
-type customField struct {
-	sanitized    string
-	datasetField string
-	structField  string
-	fieldType    string
-	displayName  string
-}
-
-func (p *placementProcessor) fetchAndValidateCustomFields() error {
-	env := os.Getenv("PLACEMENT_CUSTOMFIELDS")
-	if env == "" {
-		return nil
-	}
-
-	rawFields := strings.Split(env, ",")
-	fields := []customField{}
-
-	for _, f := range rawFields {
-		field := strings.TrimSpace(f)
-
-		if !customFieldRegexp.MatchString(field) {
-			return customFieldError{field: field}
-		}
-
-		parts := customFieldRegexp.FindStringSubmatch(field)
-		num, _ := strconv.Atoi(parts[3])
-
-		err := customFieldError{field: field, fieldValid: true}
-		if num <= 0 {
-			err.underRange = true
-			return err
-		}
-
-		maxRange := customFieldMaxRange[parts[2]]
-		if num > maxRange {
-			err.maxRange = maxRange
-			return err
-		}
-
-		fields = append(fields, customField{
-			sanitized:    field,
-			datasetField: strings.ToLower(strings.Join(parts[1:], "_")),
-			structField:  strings.Title(field),
-			displayName:  strings.Join(parts[1:], " "),
-			fieldType:    parts[2],
-		})
-	}
-
-	p.customFields = fields
-	return nil
-}
-
-func (p *placementProcessor) extractCustomFieldData(placement bullhorn.Placement, row geckoboard.DataRow) {
-	ref := reflect.Indirect(reflect.ValueOf(placement))
-
-	for _, f := range p.customFields {
-		val := ref.FieldByName(f.structField)
-
-		switch f.fieldType {
-		case "Text":
-			row[f.datasetField] = val.String()
-		case "Float":
-			row[f.datasetField] = val.Float()
-		case "Date":
-			epoch, _ := val.Interface().(bullhorn.EpochMilli)
-			row[f.datasetField] = valueOrNil(epoch.String())
-		}
-	}
-}
-
-func (p *placementProcessor) extractCustomFieldsForSchema(fields map[string]geckoboard.Field) {
-	for _, f := range p.customFields {
-		switch f.fieldType {
-		case "Text":
-			fields[f.datasetField] = geckoboard.Field{
-				Name:     f.displayName,
-				Type:     geckoboard.StringType,
-				Optional: true,
-			}
-		case "Float":
-			fields[f.datasetField] = geckoboard.Field{
-				Name:     f.displayName,
-				Type:     geckoboard.NumberType,
-				Optional: true,
-			}
-		case "Date":
-			fields[f.datasetField] = geckoboard.Field{
-				Name:     f.displayName,
-				Type:     geckoboard.DatetimeType,
-				Optional: true,
-			}
-		}
 	}
 }
